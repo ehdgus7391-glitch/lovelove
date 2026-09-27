@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>결혼 준비 가계부</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf8f5;
+  --surface: #ffffff;
+  --surface2: #f5f0ea;
+  --accent: #b5896a;
+  --accent2: #8a6550;
+  --accent-light: #f0e6dc;
+  --text: #2c2018;
+  --text2: #6b5040;
+  --text3: #a08070;
+  --border: #e0d5ca;
+  --positive: #4a7a5a;
+  --negative: #c05050;
+  --shadow: 0 2px 12px rgba(100,60,30,0.07);
+  --shadow-lg: 0 6px 28px rgba(100,60,30,0.13);
+  --radius: 12px;
+  --tab-h: 52px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, #2e1c10 0%, #5c3820 60%, #9a6040 100%);
+  padding: 36px 24px 0;
+  padding-top: calc(36px + env(safe-area-inset-top, 0px));
+  text-align: center;
+  position: relative;
+}
+.header-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 10px; letter-spacing: 4px; color: #c9a88a;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+header h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px;
+}
+header h1 span { color: #f0d0b0; }
+.save-indicator {
+  position: absolute; top: 14px; right: 16px;
+  font-size: 10px; color: #c9a88a; letter-spacing: 0.5px;
+  opacity: 0; transition: opacity 0.4s;
+  display: flex; align-items: center; gap: 4px;
+}
+.save-indicator.show { opacity: 1; }
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: #80e0a8; }
+
+/* ── TABS ── */
+.tab-bar {
+  display: flex;
+  background: rgba(0,0,0,0.25);
+  margin-top: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 1; min-width: 90px;
+  padding: 14px 8px;
+  border: none; background: transparent;
+  color: rgba(255,255,255,0.55);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+}
+.tab-btn.active {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  border-bottom-color: #f0d0b0;
+}
+.tab-btn:hover:not(.active) { color: rgba(255,255,255,0.8); }
+
+/* ── GLOBAL SUMMARY ── */
+.global-summary {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 0;
+}
+.gs-item {
+  flex: 1; min-width: 100px;
+  padding: 14px 16px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+.gs-item:last-child { border-right: none; }
+.gs-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+.gs-value { font-family: 'Noto Serif KR', serif; font-size: 17px; font-weight: 700; }
+.gs-value.accent { color: var(--accent2); }
+.gs-value.pos { color: var(--positive); }
+.gs-value.neg { color: var(--negative); }
+
+/* ── TAB PANELS ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── SECTION WRAP ── */
+.main-wrap {
+  max-width: 900px; margin: 0 auto;
+  padding: 20px 14px 60px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* ── CARD ── */
+.section-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  animation: fadeUp 0.3s ease both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; user-select: none;
+}
+.card-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title .icon {
+  width: 26px; height: 26px; border-radius: 7px;
+  background: var(--accent-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.card-totals { display: flex; gap: 14px; align-items: center; }
+.ct-item { text-align: right; }
+.ct-lbl { font-size: 9px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.ct-val { font-family: 'Noto Serif KR', serif; font-size: 14px; font-weight: 700; color: var(--accent2); }
+.toggle-icon { font-size: 11px; color: var(--text3); margin-left: 6px; transition: transform 0.2s; display: inline-block; }
+.card-body.collapsed { display: none; }
+
+/* ── TABLE ── */
+.entry-table { width: 100%; border-collapse: collapse; }
+.entry-table thead th {
+  font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text3); font-weight: 500; padding: 8px 12px;
+  border-bottom: 1px solid var(--border); background: var(--surface2); text-align: left;
+}
+.entry-table thead th.right { text-align: right; }
+.entry-table tbody tr { border-bottom: 1px solid #f0ebe4; transition: background 0.12s; }
+.entry-table tbody tr:hover { background: #fdf9f6; }
+.entry-table tbody tr:last-child { border-bottom: none; }
+.entry-table td { padding: 8px 12px; font-size: 13px; vertical-align: middle; }
+.entry-table td.right { text-align: right; }
+.entry-table td.actions { text-align: right; width: 32px; padding: 8px 8px; }
+
+/* ── INPUTS ── */
+.row-input {
+  background: transparent; border: none; outline: none;
+  font-family: inherit; font-size: 13px; color: var(--text);
+  width: 100%; padding: 2px 0;
+}
+.row-input:focus { background: var(--accent-light); border-radius: 4px; padding: 2px 6px; }
+.row-input.right { text-align: right; font-weight: 500; }
+.row-input.sm { font-size: 11.5px; color: var(--text3); }
+
+/* ── 예산 / 결산 칸 구분 ── */
+.col-budget {
+  background: #eef4ff !important;
+  border-left: 3px solid #6ea0e0 !important;
+  padding-left: 10px !important;
+}
+.col-result {
+  background: #fff4ec !important;
+  border-left: 3px solid #e07a40 !important;
+  padding-left: 10px !important;
+}
+.col-budget .row-input { color: #2a4a8a; font-weight: 600; }
+.col-budget .row-input::placeholder { color: #9ab4d8; }
+.col-result .row-input { color: #8a3a10; font-weight: 600; }
+.col-result .row-input::placeholder { color: #d8a888; }
+.col-budget .row-input:focus { background: #ddeaff; }
+.col-result .row-input:focus { background: #ffe4cc; }
+
+/* 헤더 컬럼 색 구분 */
+.th-budget {
+  background: #ddeaff !important;
+  color: #2a4a8a !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px;
+}
+.th-result {
+  background: #ffe4cc !important;
+  color: #8a3a10 !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px;
+}
+.th-budget::before { content: '📘 '; font-size: 9px; }
+.th-result::before { content: '🧾 '; font-size: 9px; }
+
+/* 카드 헤더 예산/결산 뱃지 */
+.ct-item.budget .ct-lbl { color: #6ea0e0; }
+.ct-item.budget .ct-val { color: #2a5aaa; }
+.ct-item.result .ct-lbl { color: #e07a40; }
+.ct-item.result .ct-val { color: #b04010; }
+
+.status-select, .currency-select {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  font-size: 11px; padding: 3px 5px; color: var(--text2);
+  font-family: inherit; cursor: pointer; outline: none; max-width: 80px;
+}
+.status-select.done { background: #e8f5ee; border-color: #a0d0b8; color: var(--positive); }
+.status-select.pending { background: #fff8e8; border-color: #d0b878; color: #8a6020; }
+
+/* ── ADD / DEL ── */
+.add-row-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 14px; width: 100%; background: none; border: none;
+  border-top: 1px dashed var(--border); cursor: pointer;
+  color: var(--accent); font-size: 12px; font-family: inherit; font-weight: 500;
+  transition: background 0.15s;
+}
+.add-row-btn:hover { background: var(--accent-light); }
+.add-row-btn::before { content: '＋'; font-size: 13px; }
+.del-btn {
+  background: none; border: none; cursor: pointer;
+  color: #d0c0b8; font-size: 14px; padding: 2px 4px;
+  border-radius: 4px; transition: color 0.15s;
+  line-height: 1;
+}
+.del-btn:hover { color: var(--negative); background: #fff0f0; }
+
+/* ── CARD FOOTER ── */
+.card-footer-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 16px; border-top: 2px solid var(--accent-light);
+  background: var(--surface2);
+}
+.cf-label { font-weight: 600; color: var(--text2); font-family: 'Noto Serif KR', serif; font-size: 12px; }
+.cf-vals { display: flex; gap: 18px; }
+.cf-item { text-align: right; }
+.cf-lbl { font-size: 9px; color: var(--text3); letter-spacing: 1px; margin-bottom: 2px; }
+.cf-val { font-family: 'Noto Serif KR', serif; font-size: 14px; font-weight: 700; color: var(--accent2); }
+
+/* ── TAB SUMMARY BOX ── */
+.tab-summary {
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+}
+.tab-summary.wedding { background: linear-gradient(135deg, #2e1c10, #7a4828); }
+.tab-summary.trousseau { background: linear-gradient(135deg, #101828, #1e3a5a); }
+.tab-summary.honeymoon { background: linear-gradient(135deg, #0e2018, #1a4a30); }
+.tab-summary h3 {
+  font-family: 'Noto Serif KR', serif; font-size: 14px; margin-bottom: 16px;
+  letter-spacing: 0.5px; opacity: 0.85;
+}
+.ts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+.ts-item { text-align: center; padding: 10px 6px; border-right: 1px solid rgba(255,255,255,0.12); }
+.ts-item:last-child { border-right: none; }
+.ts-lbl { font-size: 10px; opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.ts-val { font-family: 'Noto Serif KR', serif; font-size: 18px; font-weight: 700; }
+.ts-val.hl { color: #f8d8a8; }
+
+/* ── EXCHANGE BAR ── */
+.exchange-bar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+}
+.ex-label { font-size: 11px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+.exchange-inputs { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; }
+.ex-pair { display: flex; align-items: center; gap: 5px; }
+.ex-pair label { font-size: 11px; color: var(--text2); }
+.ex-input {
+  width: 76px; border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 7px; font-family: 'Noto Serif KR', serif;
+  font-size: 12px; font-weight: 600; color: var(--text);
+  background: var(--surface2); text-align: right; outline: none;
+}
+.ex-input:focus { border-color: var(--accent); }
+
+/* ── DEST BANNER ── */
+.dest-banner {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.dest-field { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 140px; }
+.dest-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); white-space: nowrap; }
+.dest-input {
+  flex: 1; border: none; border-bottom: 2px solid var(--border);
+  background: transparent; font-family: 'Noto Serif KR', serif;
+  font-size: 14px; font-weight: 600; color: var(--text);
+  padding: 3px 2px; outline: none; transition: border-color 0.2s;
+}
+.dest-input:focus { border-bottom-color: var(--accent); }
+.dest-input::placeholder { color: var(--border); font-weight: 400; font-size: 13px; }
+
+/* ── NOTES ── */
+.notes-area { padding: 12px 16px; border-top: 1px solid var(--border); }
+.notes-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+.notes-area textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 12px; font-family: inherit; font-size: 13px;
+  color: var(--text); background: var(--surface2);
+  resize: vertical; min-height: 60px; outline: none;
+}
+.notes-area textarea:focus { border-color: var(--accent); }
+
+/* ── EDITABLE INPUTS (final) ── */
+.fe-wrap { padding: 14px 16px; }
+.fe-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.fe-row:last-child { margin-bottom: 0; }
+.fe-label { font-size: 13px; color: var(--text2); flex: 1; }
+.fe-input {
+  font-family: 'Noto Serif KR', serif; font-size: 14px; font-weight: 600; color: var(--text);
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 10px; text-align: right; width: 140px; outline: none;
+}
+.fe-input:focus { border-color: var(--accent); }
+
+/* ── FOOTER ── */
+footer {
+  text-align: center; padding: 20px;
+  font-size: 10px; color: var(--text3); letter-spacing: 1px;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 600px) {
+  .global-summary { gap: 0; }
+  .gs-item { padding: 10px 8px; }
+  .gs-value { font-size: 14px; }
+  .ts-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .ts-val { font-size: 15px; }
+  .card-totals { gap: 8px; }
+  .ct-val { font-size: 12px; }
+  .entry-table thead { display: none; }
+  .entry-table td { display: block; padding: 4px 12px; }
+  .entry-table td:first-child { padding-top: 10px; font-weight: 500; }
+  .entry-table td:last-child { padding-bottom: 10px; }
+  .entry-table td.right { text-align: left; }
+  .entry-table td.actions { text-align: right; padding-top: 0; }
+  .entry-table tr { display: flex; flex-wrap: wrap; }
+  .entry-table td { flex: 1 1 50%; }
+  .entry-table td:first-child { flex: 1 1 100%; }
+  .entry-table td.actions { flex: 0 0 auto; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="save-indicator" id="saveIndicator"><div class="save-dot"></div> 저장됨</div>
+  <div class="header-label">Wedding Planner</div>
+  <h1>결혼 준비 <span>통합 가계부</span></h1>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('wedding',this)">💍 결혼식</button>
+    <button class="tab-btn" onclick="switchTab('trousseau',this)">🏠 혼수</button>
+    <button class="tab-btn" onclick="switchTab('honeymoon',this)">✈️ 신혼여행</button>
+  </div>
+</header>
+
+<!-- 전체 요약 -->
+<div class="global-summary">
+  <div class="gs-item"><div class="gs-label">결혼식</div><div class="gs-value accent" id="gs_wedding">₩0</div></div>
+  <div class="gs-item"><div class="gs-label">혼수</div><div class="gs-value accent" id="gs_trousseau">₩0</div></div>
+  <div class="gs-item"><div class="gs-label">신혼여행</div><div class="gs-value accent" id="gs_honeymoon">₩0</div></div>
+  <div class="gs-item"><div class="gs-label">총합계</div><div class="gs-value" id="gs_total" style="color:var(--accent2)">₩0</div></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1 : 결혼식
+══════════════════════════════════════ -->
+<div class="tab-panel active" id="panel_wedding">
+<div class="main-wrap">
+
+  <!-- 결혼식 카테고리들 -->
+  <div id="wedding_catWrap"></div>
+
+  <!-- 기타 합산 -->
+  <div class="section-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="icon">📋</span> 외부 비용 합산 입력</div>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="fe-wrap">
+        <div class="fe-row"><span class="fe-label">결혼식 비용 합계 (자동집계)</span><input class="fe-input" id="wfe1" placeholder="₩0" readonly style="color:var(--text3);cursor:default"></div>
+        <div class="fe-row"><span class="fe-label">신혼여행 비용</span><input class="fe-input" id="wfe2" type="text" placeholder="0" oninput="onWfeInput()"></div>
+        <div class="fe-row"><span class="fe-label">혼수 비용</span><input class="fe-input" id="wfe3" type="text" placeholder="0" oninput="onWfeInput()"></div>
+        <div class="fe-row"><span class="fe-label">예물 · 예단</span><input class="fe-input" id="wfe4" type="text" placeholder="0" oninput="onWfeInput()"></div>
+        <div class="fe-row"><span class="fe-label" style="color:var(--positive);font-weight:600">축의금 차감</span><input class="fe-input" id="wfe5" type="text" placeholder="0" oninput="onWfeInput()" style="color:var(--positive)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 결혼식 최종 -->
+  <div class="tab-summary wedding">
+    <h3>💍 결혼 비용 최종 결산</h3>
+    <div class="ts-grid">
+      <div class="ts-item"><div class="ts-lbl">결혼식</div><div class="ts-val hl" id="ws1">₩0</div></div>
+      <div class="ts-item"><div class="ts-lbl">총합 (축의금 제외)</div><div class="ts-val" id="ws2">₩0</div></div>
+      <div class="ts-item"><div class="ts-lbl">실 부담 (축의금 차감)</div><div class="ts-val hl" id="ws3">₩0</div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2 : 혼수
+══════════════════════════════════════ -->
+<div class="tab-panel" id="panel_trousseau">
+<div class="main-wrap">
+
+  <div id="trousseau_catWrap"></div>
+
+  <div class="tab-summary trousseau">
+    <h3>🏠 혼수 구매 현황</h3>
+    <div class="ts-grid">
+      <div class="ts-item"><div class="ts-lbl">총 예산</div><div class="ts-val hl" id="tr1">₩0</div></div>
+      <div class="ts-item"><div class="ts-lbl">총 결산</div><div class="ts-val" id="tr2">₩0</div></div>
+      <div class="ts-item"><div class="ts-lbl">구매완료</div><div class="ts-val hl" id="tr3">0건</div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3 : 신혼여행
+══════════════════════════════════════ -->
+<div class="tab-panel" id="panel_honeymoon">
+<div class="main-wrap">
+
+  <!-- 여행지 정보 -->
+  <div class="dest-banner">
+    <div class="dest-field">
+      <span class="dest-label">여행지</span>
+      <input class="dest-input" id="hm_dest" type="text" placeholder="예: 몰디브 / 발리" oninput="save()">
+    </div>
+    <div class="dest-field">
+      <span class="dest-label">일정</span>
+      <input class="dest-input" id="hm_date" type="text" placeholder="예: 11.08 ~ 11.14 (7박 8일)" oninput="save()">
+    </div>
+  </div>
+
+  <!-- 환율 -->
+  <div class="exchange-bar">
+    <span class="ex-label">📈 환율</span>
+    <div class="exchange-inputs">
+      <div class="ex-pair"><label>USD ₩</label><input class="ex-input" id="ex_usd" type="text" placeholder="1,380" oninput="reCalcHoneymoon()"></div>
+      <div class="ex-pair"><label>EUR ₩</label><input class="ex-input" id="ex_eur" type="text" placeholder="1,500" oninput="reCalcHoneymoon()"></div>
+      <div class="ex-pair"><label>JPY ₩</label><input class="ex-input" id="ex_jpy" type="text" placeholder="9.2" oninput="reCalcHoneymoon()"></div>
+      <div class="ex-pair"><label>THB ₩</label><input class="ex-input" id="ex_thb" type="text" placeholder="38" oninput="reCalcHoneymoon()"></div>
+      <div class="ex-pair"><label>IDR ₩</label><input class="ex-input" id="ex_idr" type="text" placeholder="0.084" oninput="reCalcHoneymoon()"></div>
+    </div>
+  </div>
+
+  <div id="honeymoon_catWrap"></div>
+
+  <!-- 메모 -->
+  <div class="section-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="icon">📝</span> 여행 메모</div>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="notes-area">
+        <textarea id="hm_memo" placeholder="항공 예약번호, 호텔 예약번호, 준비물 등..." oninput="save()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-summary honeymoon">
+    <h3>✈️ 신혼여행 최종 결산</h3>
+    <div class="ts-grid">
+      <div class="ts-item"><div class="ts-lbl">총 예산</div><div class="ts-val hl" id="hm1">₩0</div></div>
+      <div class="ts-item"><div class="ts-lbl">총 지출</div><div class="ts-val" id="hm2">₩0</div></div>
+      <div class="ts-item"><div class="ts-lbl">1인당</div><div class="ts-val hl" id="hm3">₩0</div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<footer>결혼 준비 가계부 — 데이터는 이 기기에 자동 저장됩니다</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   CATEGORY DEFINITIONS
+═══════════════════════════════════════════════════ */
+const WEDDING_CATS = [
+  { id:'w_prep',    icon:'✨', title:'준비 / 관리',     items:['피부 관리','상견례','식전 모임','기타 준비'], cols:'wedding' },
+  { id:'w_studio',  icon:'📷', title:'스튜디오 촬영',   items:['헤어 스타일링','헬퍼이모','부케','사진 촬영 비용'], cols:'wedding' },
+  { id:'w_outfit',  icon:'👗', title:'의상',             items:['신부 웨딩드레스','신랑 정장','피팅비','2부 의상·구두'], cols:'wedding' },
+  { id:'w_gift',    icon:'💍', title:'예물 / 예단',      items:['웨딩밴드','목걸이·기타 주얼리','가족 예단'], cols:'wedding' },
+  { id:'w_day',     icon:'🏛️', title:'결혼식 당일',     items:['대관료','식대','헬퍼이모','청첩장','수고비','답례품','메이크업&헤어 (부부)','메이크업&헤어 (가족)','한복·의상 대여','식전·식중 영상','본식스냅·촬영'], cols:'wedding' },
+];
+const TROUSSEAU_CATS = [
+  { id:'tr_app',  icon:'🏠', title:'가전제품',     items:['냉장고','세탁기 / 건조기','TV','에어컨','공기청정기','청소기','전자레인지','식기세척기','기타 소형가전'], cols:'trousseau' },
+  { id:'tr_fur',  icon:'🛋️', title:'가구',         items:['침대 프레임 & 매트리스','소파','식탁 & 의자','옷장 / 드레스룸','책상 & 의자','TV 장식장','선반 / 수납장'], cols:'trousseau' },
+  { id:'tr_bed',  icon:'🛏️', title:'침구 / 리넨',  items:['이불 & 베개 세트','토퍼 / 패드','시트 & 커버','수건 세트','커튼'], cols:'trousseau' },
+  { id:'tr_kit',  icon:'🍳', title:'주방용품',      items:['냄비 & 프라이팬 세트','식기류','커피머신 / 음료 기기','기타 주방용품'], cols:'trousseau' },
+  { id:'tr_bath', icon:'🪥', title:'욕실 / 생활용품',items:['욕실 악세서리','거울','기타 생활용품'], cols:'trousseau' },
+  { id:'tr_dig',  icon:'💻', title:'디지털 / 기타', items:['노트북 / 컴퓨터','스마트홈 기기','기타'], cols:'trousseau' },
+];
+const HONEYMOON_CATS = [
+  { id:'hm_fl',  icon:'✈️', title:'항공권',      items:['신랑 항공권','신부 항공권','수하물 추가','공항 픽업'], cols:'honeymoon' },
+  { id:'hm_ht',  icon:'🏨', title:'숙박',        items:['1박','2박','3박','4박','기타 숙박'], cols:'honeymoon' },
+  { id:'hm_tr',  icon:'🗺️', title:'투어 / 액티비티', items:['현지 투어','스노클링 / 다이빙','스파 & 마사지','선셋 크루즈','기타 액티비티'], cols:'honeymoon' },
+  { id:'hm_fd',  icon:'🍽️', title:'식비',        items:['조식','중식','석식','카페 & 간식','룸서비스'], cols:'honeymoon' },
+  { id:'hm_sh',  icon:'🛍️', title:'쇼핑 / 기념품', items:['의류 & 잡화','기념품','면세 쇼핑','현지 마켓'], cols:'honeymoon' },
+  { id:'hm_tp',  icon:'🚕', title:'교통',        items:['공항 택시 / 셔틀','현지 교통','렌터카'], cols:'honeymoon' },
+  { id:'hm_ms',  icon:'💊', title:'기타',        items:['여행자 보험','여행용품','환전 수수료','로밍 / 유심','비상금'], cols:'honeymoon' },
+];
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+const catBudgets = {}, catResults = {};
+let saveTimer = null;
+
+/* ═══════════════════════════════════════════════════
+   FORMAT
+═══════════════════════════════════════════════════ */
+function fmt(n) { return '₩' + Math.round(n||0).toLocaleString('ko-KR'); }
+function parseAmt(v) { return parseFloat(String(v||'').replace(/[^0-9.]/g,'')) || 0; }
+
+/* ═══════════════════════════════════════════════════
+   TAB
+═══════════════════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel_' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleCard(header) {
+  const body = header.nextElementSibling;
+  const icon = header.querySelector('.toggle-icon');
+  body.classList.toggle('collapsed');
+  icon.style.transform = body.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+}
+
+/* ═══════════════════════════════════════════════════
+   BUILD CATEGORIES
+═══════════════════════════════════════════════════ */
+function buildCat(cat, wrapId, type) {
+  const wrap = document.getElementById(wrapId);
+  const card = document.createElement('div');
+  card.className = 'section-card';
+
+  let theadHtml = '';
+  let addRowFn = '';
+
+  if (type === 'wedding') {
+    theadHtml = `<tr>
+      <th>항목명</th><th>설명</th>
+      <th class="right th-budget">예산 금액</th>
+      <th class="right th-result">실제 결산</th>
+      <th>메모</th><th></th></tr>`;
+    addRowFn = `addWeddingRow('${cat.id}')`;
+  } else if (type === 'trousseau') {
+    theadHtml = `<tr>
+      <th>품목명</th><th>브랜드/모델</th>
+      <th class="right th-budget">예산 금액</th>
+      <th class="right th-result">실제 결산</th>
+      <th>구매처</th><th>상태</th><th></th></tr>`;
+    addRowFn = `addTrousseauRow('${cat.id}')`;
+  } else {
+    theadHtml = `<tr>
+      <th>항목명</th><th>메모</th>
+      <th class="right th-budget">예산(₩)</th>
+      <th>통화</th>
+      <th class="right th-result">현지 금액</th>
+      <th class="right th-result">원화 환산</th><th></th></tr>`;
+    addRowFn = `addHoneymoonRow('${cat.id}')`;
+  }
+
+  card.innerHTML = `
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="icon">${cat.icon}</span>${cat.title}</div>
+      <div class="card-totals">
+        <div class="ct-item budget"><div class="ct-lbl">예산</div><div class="ct-val" id="${cat.id}_bT">₩0</div></div>
+        <div class="ct-item result"><div class="ct-lbl">결산</div><div class="ct-val" id="${cat.id}_rT">₩0</div></div>
+        <span class="toggle-icon">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="entry-table">
+        <thead>${theadHtml}</thead>
+        <tbody id="${cat.id}_body"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="${addRowFn}">항목 추가</button>
+      <div class="card-footer-row">
+        <span class="cf-label">${cat.title} 소계</span>
+        <div class="cf-vals">
+          <div class="cf-item"><div class="cf-lbl">예산</div><div class="cf-val" id="${cat.id}_fB">₩0</div></div>
+          <div class="cf-item"><div class="cf-lbl">결산</div><div class="cf-val" id="${cat.id}_fR">₩0</div></div>
+        </div>
+      </div>
+    </div>`;
+  wrap.appendChild(card);
+  cat.items.forEach(name => {
+    if (type === 'wedding') addWeddingRow(cat.id, name);
+    else if (type === 'trousseau') addTrousseauRow(cat.id, name);
+    else addHoneymoonRow(cat.id, name);
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   WEDDING ROWS
+═══════════════════════════════════════════════════ */
+function addWeddingRow(catId, name) {
+  const tbody = document.getElementById(catId + '_body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input class="row-input" type="text" placeholder="${name||'항목명'}" oninput="updateCat('${catId}','wedding')"></td>
+    <td><input class="row-input sm" type="text" placeholder="설명 (선택)" oninput="updateCat('${catId}','wedding')"></td>
+    <td class="right col-budget"><input class="row-input right" type="text" placeholder="예산 입력" style="max-width:100px" oninput="updateCat('${catId}','wedding')"></td>
+    <td class="right col-result"><input class="row-input right" type="text" placeholder="실제 금액" style="max-width:100px" oninput="updateCat('${catId}','wedding')"></td>
+    <td><input class="row-input sm" type="text" placeholder="메모 (선택)" oninput="updateCat('${catId}','wedding')"></td>
+    <td class="actions"><button class="del-btn" onclick="delRow(this,'${catId}','wedding')">✕</button></td>`;
+  tbody.appendChild(tr);
+  updateCat(catId, 'wedding');
+}
+
+/* ═══════════════════════════════════════════════════
+   TROUSSEAU ROWS
+═══════════════════════════════════════════════════ */
+function addTrousseauRow(catId, name) {
+  const tbody = document.getElementById(catId + '_body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input class="row-input" type="text" placeholder="${name||'품목명'}" oninput="updateCat('${catId}','trousseau')"></td>
+    <td><input class="row-input sm" type="text" placeholder="브랜드/모델 (선택)" oninput="updateCat('${catId}','trousseau')"></td>
+    <td class="right col-budget"><input class="row-input right" type="text" placeholder="예산 입력" style="max-width:100px" oninput="updateCat('${catId}','trousseau')"></td>
+    <td class="right col-result"><input class="row-input right" type="text" placeholder="실제 금액" style="max-width:100px" oninput="updateCat('${catId}','trousseau')"></td>
+    <td><input class="row-input sm" type="text" placeholder="구매처 (선택)" oninput="updateCat('${catId}','trousseau')"></td>
+    <td>
+      <select class="status-select none" onchange="onStatusChange(this,'${catId}')">
+        <option value="none">미정</option>
+        <option value="pending">검토중</option>
+        <option value="done">완료</option>
+      </select>
+    </td>
+    <td class="actions"><button class="del-btn" onclick="delRow(this,'${catId}','trousseau')">✕</button></td>`;
+  tbody.appendChild(tr);
+  updateCat(catId, 'trousseau');
+}
+function onStatusChange(sel, catId) {
+  sel.className = 'status-select ' + sel.value;
+  updateCat(catId, 'trousseau');
+}
+
+/* ═══════════════════════════════════════════════════
+   HONEYMOON ROWS
+═══════════════════════════════════════════════════ */
+function addHoneymoonRow(catId, name) {
+  const tbody = document.getElementById(catId + '_body');
+  const tr = document.createElement('tr');
+  const uid = 'krw_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  tr.innerHTML = `
+    <td><input class="row-input" type="text" placeholder="${name||'항목명'}" oninput="updateCat('${catId}','honeymoon')"></td>
+    <td><input class="row-input sm" type="text" placeholder="메모 (선택)" oninput="updateCat('${catId}','honeymoon')"></td>
+    <td class="right col-budget"><input class="row-input right" type="text" placeholder="예산(₩)" style="max-width:90px" oninput="updateCat('${catId}','honeymoon')"></td>
+    <td>
+      <select class="currency-select" onchange="updateCat('${catId}','honeymoon')">
+        <option>KRW</option><option>USD</option><option>EUR</option>
+        <option>JPY</option><option>THB</option><option>IDR</option>
+      </select>
+    </td>
+    <td class="right col-result"><input class="row-input right" type="text" placeholder="실제 금액" style="max-width:90px" oninput="updateCat('${catId}','honeymoon')"></td>
+    <td class="right col-result" style="font-size:11.5px;color:#8a3a10;font-family:'Noto Serif KR',serif;font-weight:700" data-krw="${uid}">₩0</td>
+    <td class="actions"><button class="del-btn" onclick="delRow(this,'${catId}','honeymoon')">✕</button></td>`;
+  tbody.appendChild(tr);
+  updateCat(catId, 'honeymoon');
+}
+
+function getRate(cur) {
+  const r = {
+    KRW:1,
+    USD: parseAmt(document.getElementById('ex_usd').value) || 1380,
+    EUR: parseAmt(document.getElementById('ex_eur').value) || 1500,
+    JPY: parseAmt(document.getElementById('ex_jpy').value) || 9.2,
+    THB: parseAmt(document.getElementById('ex_thb').value) || 38,
+    IDR: parseAmt(document.getElementById('ex_idr').value) || 0.084,
+  };
+  return r[cur] || 1;
+}
+
+function reCalcHoneymoon() {
+  HONEYMOON_CATS.forEach(cat => updateCat(cat.id, 'honeymoon'));
+  save();
+}
+
+/* ═══════════════════════════════════════════════════
+   DELETE ROW
+═══════════════════════════════════════════════════ */
+function delRow(btn, catId, type) {
+  btn.closest('tr').remove();
+  updateCat(catId, type);
+}
+
+/* ═══════════════════════════════════════════════════
+   UPDATE CATEGORY TOTAL
+═══════════════════════════════════════════════════ */
+function updateCat(catId, type) {
+  const tbody = document.getElementById(catId + '_body');
+  if (!tbody) return;
+  let budget = 0, result = 0;
+
+  if (type === 'honeymoon') {
+    [...tbody.querySelectorAll('tr')].forEach(tr => {
+      const tds = tr.querySelectorAll('td');
+      const b   = parseAmt(tds[2]?.querySelector('input')?.value||0);
+      const cur = tds[3]?.querySelector('select')?.value || 'KRW';
+      const loc = parseAmt(tds[4]?.querySelector('input')?.value||0);
+      const krw = loc * getRate(cur);
+      const krwCell = tds[5];
+      if (krwCell) krwCell.textContent = loc > 0 ? fmt(krw) : '₩0';
+      budget += b; result += krw;
+    });
+  } else if (type === 'trousseau') {
+    [...tbody.querySelectorAll('tr')].forEach(tr => {
+      const amts = tr.querySelectorAll('td.right input');
+      budget += parseAmt(amts[0]?.value||0);
+      result += parseAmt(amts[1]?.value||0);
+    });
+  } else {
+    // wedding
+    [...tbody.querySelectorAll('tr')].forEach(tr => {
+      const amts = tr.querySelectorAll('td.right input');
+      budget += parseAmt(amts[0]?.value||0);
+      result += parseAmt(amts[1]?.value||0);
+    });
+  }
+
+  catBudgets[catId] = budget;
+  catResults[catId] = result;
+
+  document.getElementById(catId + '_bT').textContent = fmt(budget);
+  document.getElementById(catId + '_rT').textContent = fmt(result);
+  document.getElementById(catId + '_fB').textContent = fmt(budget);
+  document.getElementById(catId + '_fR').textContent = fmt(result);
+
+  updateTabSummary(type);
+  save();
+}
+
+/* ═══════════════════════════════════════════════════
+   TAB SUMMARIES
+═══════════════════════════════════════════════════ */
+function sumCats(cats) {
+  let b = 0, r = 0;
+  cats.forEach(c => { b += catBudgets[c.id]||0; r += catResults[c.id]||0; });
+  return { b, r };
+}
+
+function updateTabSummary(type) {
+  if (type === 'wedding') {
+    const { r } = sumCats(WEDDING_CATS);
+    document.getElementById('wfe1').value = r > 0 ? r.toLocaleString('ko-KR') : '';
+    document.getElementById('wfe1').placeholder = r > 0 ? '' : '₩0';
+    onWfeInput();
+    document.getElementById('gs_wedding').textContent = fmt(r);
+  } else if (type === 'trousseau') {
+    const { b, r } = sumCats(TROUSSEAU_CATS);
+    document.getElementById('tr1').textContent = fmt(b);
+    document.getElementById('tr2').textContent = fmt(r);
+    let done = 0;
+    document.querySelectorAll('#panel_trousseau .status-select').forEach(s => { if(s.value==='done') done++; });
+    document.getElementById('tr3').textContent = done + '건';
+    document.getElementById('gs_trousseau').textContent = fmt(r);
+  } else if (type === 'honeymoon') {
+    const { b, r } = sumCats(HONEYMOON_CATS);
+    document.getElementById('hm1').textContent = fmt(b);
+    document.getElementById('hm2').textContent = fmt(r);
+    document.getElementById('hm3').textContent = fmt(r/2);
+    document.getElementById('gs_honeymoon').textContent = fmt(r);
+  }
+  updateGlobalTotal();
+}
+
+function onWfeInput() {
+  const w1 = parseAmt(document.getElementById('wfe1').value);
+  const w2 = parseAmt(document.getElementById('wfe2').value);
+  const w3 = parseAmt(document.getElementById('wfe3').value);
+  const w4 = parseAmt(document.getElementById('wfe4').value);
+  const w5 = parseAmt(document.getElementById('wfe5').value);
+  const total = w1 + w2 + w3 + w4;
+  const net   = total - w5;
+  document.getElementById('ws1').textContent = fmt(w1);
+  document.getElementById('ws2').textContent = fmt(total);
+  document.getElementById('ws3').textContent = fmt(net);
+  save();
+}
+
+function updateGlobalTotal() {
+  const { r: rw } = sumCats(WEDDING_CATS);
+  const { r: rt } = sumCats(TROUSSEAU_CATS);
+  const { r: rh } = sumCats(HONEYMOON_CATS);
+  document.getElementById('gs_total').textContent = fmt(rw + rt + rh);
+}
+
+/* ═══════════════════════════════════════════════════
+   SAVE / LOAD — localStorage
+═══════════════════════════════════════════════════ */
+function collectData() {
+  const data = { version: 1, wedding:{}, trousseau:{}, honeymoon:{}, wfe:{}, exRates:{}, hmMeta:{} };
+
+  // wedding
+  WEDDING_CATS.forEach(cat => {
+    const rows = [];
+    document.getElementById(cat.id + '_body').querySelectorAll('tr').forEach(tr => {
+      const inputs = tr.querySelectorAll('input');
+      rows.push([...inputs].map(i => i.value));
+    });
+    data.wedding[cat.id] = rows;
+  });
+
+  // trousseau
+  TROUSSEAU_CATS.forEach(cat => {
+    const rows = [];
+    document.getElementById(cat.id + '_body').querySelectorAll('tr').forEach(tr => {
+      const inputs = tr.querySelectorAll('input');
+      const sel    = tr.querySelector('select');
+      rows.push({ vals: [...inputs].map(i => i.value), status: sel?.value||'none' });
+    });
+    data.trousseau[cat.id] = rows;
+  });
+
+  // honeymoon
+  HONEYMOON_CATS.forEach(cat => {
+    const rows = [];
+    document.getElementById(cat.id + '_body').querySelectorAll('tr').forEach(tr => {
+      const inputs = tr.querySelectorAll('input');
+      const sel    = tr.querySelector('select');
+      rows.push({ vals: [...inputs].map(i => i.value), cur: sel?.value||'KRW' });
+    });
+    data.honeymoon[cat.id] = rows;
+  });
+
+  // wfe
+  ['wfe2','wfe3','wfe4','wfe5'].forEach(id => { data.wfe[id] = document.getElementById(id).value; });
+
+  // exchange rates
+  ['ex_usd','ex_eur','ex_jpy','ex_thb','ex_idr'].forEach(id => { data.exRates[id] = document.getElementById(id).value; });
+
+  // hm meta
+  data.hmMeta.dest = document.getElementById('hm_dest').value;
+  data.hmMeta.date = document.getElementById('hm_date').value;
+  data.hmMeta.memo = document.getElementById('hm_memo').value;
+
+  return data;
+}
+
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem('wedding_budget_v1', JSON.stringify(collectData()));
+      const ind = document.getElementById('saveIndicator');
+      ind.classList.add('show');
+      setTimeout(() => ind.classList.remove('show'), 1800);
+    } catch(e) { console.warn('저장 실패:', e); }
+  }, 600);
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem('wedding_budget_v1');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+
+    // wedding
+    WEDDING_CATS.forEach(cat => {
+      const rows = data.wedding?.[cat.id];
+      if (!rows) return;
+      const tbody = document.getElementById(cat.id + '_body');
+      // 기존 default rows 제거 후 재구성
+      tbody.innerHTML = '';
+      rows.forEach(vals => {
+        addWeddingRow(cat.id);
+        const tr = tbody.lastElementChild;
+        tr.querySelectorAll('input').forEach((inp, i) => { inp.value = vals[i]||''; });
+      });
+      updateCat(cat.id, 'wedding');
+    });
+
+    // trousseau
+    TROUSSEAU_CATS.forEach(cat => {
+      const rows = data.trousseau?.[cat.id];
+      if (!rows) return;
+      const tbody = document.getElementById(cat.id + '_body');
+      tbody.innerHTML = '';
+      rows.forEach(row => {
+        addTrousseauRow(cat.id);
+        const tr = tbody.lastElementChild;
+        tr.querySelectorAll('input').forEach((inp, i) => { inp.value = row.vals[i]||''; });
+        const sel = tr.querySelector('select');
+        if (sel && row.status) { sel.value = row.status; sel.className = 'status-select ' + row.status; }
+      });
+      updateCat(cat.id, 'trousseau');
+    });
+
+    // honeymoon
+    HONEYMOON_CATS.forEach(cat => {
+      const rows = data.honeymoon?.[cat.id];
+      if (!rows) return;
+      const tbody = document.getElementById(cat.id + '_body');
+      tbody.innerHTML = '';
+      rows.forEach(row => {
+        addHoneymoonRow(cat.id);
+        const tr = tbody.lastElementChild;
+        tr.querySelectorAll('input').forEach((inp, i) => { inp.value = row.vals[i]||''; });
+        const sel = tr.querySelector('select');
+        if (sel && row.cur) sel.value = row.cur;
+      });
+      updateCat(cat.id, 'honeymoon');
+    });
+
+    // wfe
+    if (data.wfe) {
+      ['wfe2','wfe3','wfe4','wfe5'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && data.wfe[id] !== undefined) el.value = data.wfe[id];
+      });
+      onWfeInput();
+    }
+
+    // exchange rates
+    if (data.exRates) {
+      ['ex_usd','ex_eur','ex_jpy','ex_thb','ex_idr'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && data.exRates[id]) el.value = data.exRates[id];
+      });
+    }
+
+    // hm meta
+    if (data.hmMeta) {
+      const d = document.getElementById('hm_dest');
+      const dt = document.getElementById('hm_date');
+      const m  = document.getElementById('hm_memo');
+      if (d)  d.value  = data.hmMeta.dest||'';
+      if (dt) dt.value = data.hmMeta.date||'';
+      if (m)  m.value  = data.hmMeta.memo||'';
+    }
+
+  } catch(e) { console.warn('불러오기 실패:', e); }
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+function init() {
+  // Build all categories
+  WEDDING_CATS.forEach(cat    => buildCat(cat, 'wedding_catWrap',    'wedding'));
+  TROUSSEAU_CATS.forEach(cat  => buildCat(cat, 'trousseau_catWrap',  'trousseau'));
+  HONEYMOON_CATS.forEach(cat  => buildCat(cat, 'honeymoon_catWrap',  'honeymoon'));
+
+  // Load saved data (overwrites defaults)
+  loadData();
+}
+
+init();
+</script>
+</body>
+</html>
